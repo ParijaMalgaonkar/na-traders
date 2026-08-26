@@ -44,7 +44,7 @@ const CONFIG = {
 
   // How long the customer sits on the payment page before the site
   // resets itself and empties the cart (milliseconds)
-  PAYMENT_RESET_MS: 10 * 60 * 1000,
+  PAYMENT_RESET_MS: 5 * 60 * 1000,
 
   // Shown in the footer
   PHONE_1: "+91 7021553995",

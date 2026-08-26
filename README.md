@@ -13,7 +13,7 @@ Apps Script attached to your spreadsheet.
 2. **product.html** — pick a weight (tag buttons), pick number of packets, Add to Cart
 3. **cart.html** — line items, grand total, Buy
 4. **checkout.html** — item count + total, then name / phone / address (all required)
-5. **payment.html** — thank you, amount, payment QR; after 10 minutes the cart
+5. **payment.html** — thank you, amount, payment QR; after 5 minutes the cart
    empties and the customer is returned to the main page
 
 ## Files
