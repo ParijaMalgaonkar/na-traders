@@ -47,6 +47,8 @@ function render(products) {
 }
 
 async function init() {
+  if (enforcePaymentHold()) return;
+
   renderCartBadge();
   try {
     render(await loadProducts());

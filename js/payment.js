@@ -18,6 +18,7 @@ function render() {
   main.innerHTML = `
     <div class="payment-box">
       <h2 class="thanks">Thank you for ordering!</h2>
+      <p class="cod-note">${CONFIG.COD_NOTE}</p>
       <p class="thanks-sub">Please make payment to this QR code and inform us after doing so. Thank you!</p>
 
       ${orderNumber ? `<p class="order-no">Order ${orderNumber}</p>` : ""}
@@ -31,8 +32,20 @@ function render() {
     </div>
   `;
 
+  holdOnThisPage();
   startResetTimer();
   loadQr();
+}
+
+// The customer stays here until the hold expires. Every other page bounces
+// back here while the deadline is live, and this stops the back button from
+// leaving. Closing the tab is still their prerogative — the cart is cleared
+// on the next page load in that case.
+function holdOnThisPage() {
+  history.pushState(null, "", location.href);
+  window.addEventListener("popstate", () => {
+    history.pushState(null, "", location.href);
+  });
 }
 
 // The QR lives in the "Payment QR" tab of the prices spreadsheet, so it can
@@ -64,7 +77,15 @@ async function loadQr() {
 }
 
 function startResetTimer() {
-  const endsAt = Date.now() + CONFIG.PAYMENT_RESET_MS;
+  // Use the stored deadline so a reload resumes the same countdown instead
+  // of granting a fresh one. Landing here without a deadline (say by opening
+  // the page directly) still gets a full hold.
+  let endsAt = getPaymentDeadline();
+  if (endsAt === null) {
+    setPaymentDeadline();
+    endsAt = getPaymentDeadline();
+  }
+
   const countdown = document.getElementById("countdown");
 
   const tick = setInterval(() => {
@@ -72,9 +93,10 @@ function startResetTimer() {
 
     if (remaining <= 0) {
       clearInterval(tick);
+      clearPaymentDeadline();
       clearCart();
       sessionStorage.removeItem(LAST_ORDER_KEY);
-      window.location.href = "index.html";
+      window.location.replace("index.html");
       return;
     }
 

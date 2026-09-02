@@ -3,6 +3,7 @@
 
 const CART_KEY = "na_cart";
 const LAST_ORDER_KEY = "na_last_order";
+const PAYMENT_DEADLINE_KEY = "na_payment_deadline";
 
 /* ── CSV loading ───────────────────────────────────────────────── */
 
@@ -213,6 +214,43 @@ function cartOrderString() {
   return getCart()
     .map((item) => `${item.name} (${item.weightLabel}) x ${item.packets}`)
     .join(", ");
+}
+
+/* ── payment hold ──────────────────────────────────────────────── */
+
+// Once an order is placed the customer is held on the payment page until the
+// deadline passes. The deadline is stored rather than counted from page load,
+// so reloading the page cannot restart or shorten the wait.
+
+function setPaymentDeadline() {
+  localStorage.setItem(PAYMENT_DEADLINE_KEY, String(Date.now() + CONFIG.PAYMENT_RESET_MS));
+}
+
+function getPaymentDeadline() {
+  const raw = parseInt(localStorage.getItem(PAYMENT_DEADLINE_KEY) || "", 10);
+  return Number.isFinite(raw) ? raw : null;
+}
+
+function clearPaymentDeadline() {
+  localStorage.removeItem(PAYMENT_DEADLINE_KEY);
+}
+
+// Called at the top of every page except the payment page itself. Sends the
+// customer back to the payment page while the hold is active, and does the
+// reset here too, so the cart still empties if they closed that page.
+function enforcePaymentHold() {
+  const deadline = getPaymentDeadline();
+  if (deadline === null) return false;
+
+  if (Date.now() < deadline) {
+    window.location.replace("payment.html");
+    return true;
+  }
+
+  clearPaymentDeadline();
+  clearCart();
+  sessionStorage.removeItem(LAST_ORDER_KEY);
+  return false;
 }
 
 /* ── shared UI bits ────────────────────────────────────────────── */

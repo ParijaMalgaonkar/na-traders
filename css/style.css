@@ -502,6 +502,17 @@ footer {
   font-size: 1.7rem;
 }
 
+.cod-note {
+  margin: 0 0 0.9rem;
+  padding: 0.6rem 0.8rem;
+  background: var(--cream);
+  border: 1px solid var(--gold);
+  border-radius: 8px;
+  color: var(--green);
+  font-size: 1rem;
+  font-weight: bold;
+}
+
 .thanks-sub {
   margin: 0 0 1.5rem;
   color: var(--ink);

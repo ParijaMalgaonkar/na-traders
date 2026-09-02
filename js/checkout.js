@@ -90,12 +90,13 @@ function render() {
         console.warn("CONFIG.ORDER_ENDPOINT is empty — order was not saved to the sheet.");
       }
 
-      // Payment page reads these; cart itself is cleared after the 10 min reset
+      // Payment page reads these; the cart is cleared when the hold expires
       sessionStorage.setItem(
         LAST_ORDER_KEY,
         JSON.stringify({ total: payload.total, orderNumber: payload.orderNumber || null })
       );
-      window.location.href = "payment.html";
+      setPaymentDeadline();
+      window.location.replace("payment.html");
     } catch (err) {
       console.error(err);
       errorEl.textContent =
@@ -107,4 +108,4 @@ function render() {
   });
 }
 
-render();
+if (!enforcePaymentHold()) render();

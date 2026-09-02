@@ -72,4 +72,4 @@ function render() {
   });
 }
 
-render();
+if (!enforcePaymentHold()) render();

@@ -71,6 +71,8 @@ function renderProduct(product) {
 }
 
 async function init() {
+  if (enforcePaymentHold()) return;
+
   renderCartBadge();
 
   const id = new URLSearchParams(window.location.search).get("id");
