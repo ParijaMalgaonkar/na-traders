@@ -31,12 +31,12 @@ header {
   /* Side padding reserves room for the logo (left) and cart (right), which
      are absolutely positioned, so the heading can never run underneath
      them on narrow screens. */
-  padding: 2rem 3.5rem 2rem 5.5rem;
+  padding: 2rem 3.5rem 2rem 6.5rem;
   text-align: center;
 }
 
 header.compact {
-  padding: 1.1rem 3.5rem 1.1rem 5.5rem;
+  padding: 1.1rem 3.5rem 1.1rem 6rem;
 }
 
 header h1 {
@@ -86,7 +86,7 @@ header p {
 }
 
 .logo {
-  height: 46px;
+  height: 62px;
   width: auto;
   display: block;
   border-radius: 8px;
@@ -94,7 +94,7 @@ header p {
 }
 
 header.compact .logo {
-  height: 38px;
+  height: 46px;
 }
 
 .badge {
@@ -546,7 +546,8 @@ footer {
     font-size: 0.85rem;
   }
 
-  .logo {
-    height: 38px;
+  .logo,
+  header.compact .logo {
+    height: 42px;
   }
 }
