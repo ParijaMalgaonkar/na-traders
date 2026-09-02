@@ -13,8 +13,11 @@ const CONFIG = {
 
   // Live CSV export pinned to the Prices tab by gid, so it won't break
   // if you add/reorder other tabs later
+  // headers=1 is essential: without it Google guesses how many leading rows
+  // are headers, and a few empty Price cells near the top make it guess
+  // wrong and fold several product rows into the header.
   get PRICES_CSV_URL() {
-    return `https://docs.google.com/spreadsheets/d/${this.SHEET_ID}/gviz/tq?tqx=out:csv&gid=${this.PRICES_GID}`;
+    return `https://docs.google.com/spreadsheets/d/${this.SHEET_ID}/gviz/tq?tqx=out:csv&headers=1&gid=${this.PRICES_GID}`;
   },
 
   // Google Apps Script Web App URL that writes orders into the sheet.
@@ -26,7 +29,7 @@ const CONFIG = {
   PAYMENT_QR_SHEET: "Payment QR",
 
   get PAYMENT_QR_CSV_URL() {
-    return `https://docs.google.com/spreadsheets/d/${this.SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(this.PAYMENT_QR_SHEET)}`;
+    return `https://docs.google.com/spreadsheets/d/${this.SHEET_ID}/gviz/tq?tqx=out:csv&headers=1&sheet=${encodeURIComponent(this.PAYMENT_QR_SHEET)}`;
   },
 
   // Used only if that tab has no usable link — drop a QR here as a backup

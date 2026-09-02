@@ -11,6 +11,15 @@ function render(products) {
   const container = document.getElementById("catalog");
   container.innerHTML = "";
 
+  // Never leave a bare page: say something if the sheet has no priced,
+  // available products right now.
+  if (products.length === 0) {
+    container.innerHTML =
+      `<p class="error">No products are available at the moment.
+       Please call us at ${CONFIG.PHONE_1} to place an order.</p>`;
+    return;
+  }
+
   const groups = groupByCategory(products);
 
   Object.keys(groups).forEach((category) => {

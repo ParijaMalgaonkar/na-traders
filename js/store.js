@@ -76,6 +76,15 @@ function rowsToProducts(rows) {
     image: idx("Image URL"),
   };
 
+  // If the sheet's headers cannot be recognised, fail loudly. Carrying on
+  // would quietly drop every product and leave the customer on a page with
+  // no explanation.
+  if (col.name === -1 || col.price === -1) {
+    throw new Error(
+      `Prices sheet headers not recognised. Found: ${header.join(", ")}`
+    );
+  }
+
   const cell = (row, i) => (i === -1 ? "" : row[i] || "");
 
   return dataRows
@@ -89,7 +98,9 @@ function rowsToProducts(rows) {
       available: cell(r, col.available).trim().toLowerCase() === "yes",
       image: normalizeImageUrl(cell(r, col.image).trim()),
     }))
-    .filter((p) => p.available && p.name);
+    // A product with no price would show as ₹0 and be orderable for free,
+    // so an unpriced row is hidden until a price is filled in.
+    .filter((p) => p.available && p.name && p.price > 0);
 }
 
 // Google Drive "Share > Copy link" gives a viewer-page URL, which a browser
