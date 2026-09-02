@@ -158,8 +158,11 @@ footer {
 .card-img {
   width: 100%;
   height: 130px;
-  object-fit: cover;
-  background: #eee;
+  /* contain, not cover: show the whole product photo rather than cropping
+     it to fill the box. The box keeps its fixed height either way, so all
+     cards stay the same size regardless of image dimensions. */
+  object-fit: contain;
+  background: #fff;
   display: block;
 }
 
@@ -201,10 +204,10 @@ footer {
 .product-img {
   width: 100%;
   height: 200px;
-  object-fit: cover;
+  object-fit: contain;
   border-radius: 8px;
   display: block;
-  background: #ececec;
+  background: #fff;
 }
 
 .product-detail h2 {
@@ -341,9 +344,9 @@ footer {
 .thumb {
   width: 38px;
   height: 38px;
-  object-fit: cover;
+  object-fit: contain;
   border-radius: 6px;
-  background: #ececec;
+  background: #fff;
   flex-shrink: 0;
 }
 
