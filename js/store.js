@@ -86,9 +86,26 @@ function rowsToProducts(rows) {
       unit: cell(r, col.unit).trim().toUpperCase() === "G" ? "G" : "KG",
       price: parseFloat(cell(r, col.price).replace(/,/g, "") || "0"),
       available: cell(r, col.available).trim().toLowerCase() === "yes",
-      image: cell(r, col.image).trim(),
+      image: normalizeImageUrl(cell(r, col.image).trim()),
     }))
     .filter((p) => p.available && p.name);
+}
+
+// Google Drive "Share > Copy link" gives a viewer-page URL, which a browser
+// cannot use as an <img> source. Rewrite any Drive link into the direct
+// image form so whoever maintains the sheet can just paste what Drive
+// hands them. Anything else (a normal image URL, or a path like
+// "images/almond.jpg") is passed through untouched.
+function normalizeImageUrl(url) {
+  if (!url) return "";
+  if (!/drive\.google\.com|docs\.google\.com/.test(url)) return url;
+
+  // Matches /file/d/FILE_ID/..., /d/FILE_ID, and ?id=FILE_ID
+  const match = url.match(/\/(?:file\/)?d\/([a-zA-Z0-9_-]{20,})/) ||
+                url.match(/[?&]id=([a-zA-Z0-9_-]{20,})/);
+  if (!match) return url;
+
+  return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w1000`;
 }
 
 async function loadProducts() {

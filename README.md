@@ -40,7 +40,13 @@ ProductID | Category | Name | Unit | Price | Available | Image URL
   (a 500g packet costs Price × 0.5). `G` means the price is per gram
   (a 500g packet costs Price × 500). Nuts are `Kg`; seeds are `G`.
 - `Available` = `Yes` to show the product, anything else hides it.
-- `Image URL` is optional; blank shows a grey placeholder.
+- `Image URL` is optional; blank shows a grey placeholder. Three forms work:
+  - a **Google Drive share link** pasted straight from Drive's "Copy link"
+    (the file must be shared "Anyone with the link"). The site rewrites it
+    into a direct image URL automatically — this is the no-technical-skills
+    route for whoever maintains the sheet.
+  - a **direct image URL** ending in `.jpg` / `.png` / `.webp`
+  - a **path inside this repo**, e.g. `images/almond-big.jpg`
 - Update prices here daily — the website and cart pick them up automatically.
 
 ### 2. Deploy the order endpoint
