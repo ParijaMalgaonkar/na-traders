@@ -212,13 +212,23 @@ function renderCartBadge() {
 // A bad link in the sheet (a page URL instead of an image, a photo that was
 // unshared, a typo) would otherwise show a broken-image icon to customers.
 // Fall back to the same grey placeholder used when no image is set.
+// The image sits inside a frame that does the sizing and clipping, which
+// lets the CSS crop the faint near-white rim the product photos carry at
+// their outer edge, so the photo meets the card edges seamlessly.
+// A bad link in the sheet (a page URL instead of an image, a photo that was
+// unshared, a typo) turns the frame into the same grey placeholder used
+// when no image is set, rather than showing a broken-image icon.
 function productImage(product, className) {
   if (!product.image) return `<div class="${className} placeholder"></div>`;
 
   const fallback =
     `this.onerror=null;` +
-    `this.replaceWith(Object.assign(document.createElement('div'),` +
-    `{className:'${className} placeholder'}))`;
+    `this.parentNode.classList.add('placeholder');` +
+    `this.remove()`;
 
-  return `<img src="${product.image}" alt="${product.name}" class="${className}" onerror="${fallback}" />`;
+  return (
+    `<div class="${className}">` +
+    `<img src="${product.image}" alt="${product.name}" onerror="${fallback}" />` +
+    `</div>`
+  );
 }
