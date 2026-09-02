@@ -3,6 +3,12 @@
   --gold: #b9862f;
   --cream: #f7ecda;
   --ink: #2b2b2b;
+
+  /* Shape of the product photo boxes, matched to the actual photos
+     (366 x 322). Image areas size themselves to this ratio, so a photo
+     fills its box completely with no cropping and no empty bands.
+     If you switch to photos of a different shape, change this one value. */
+  --img-ratio: 366 / 322;
 }
 
 * {
@@ -157,11 +163,11 @@ footer {
 
 .card-img {
   width: 100%;
-  height: 130px;
-  /* contain, not cover: show the whole product photo rather than cropping
-     it to fill the box. The box keeps its fixed height either way, so all
-     cards stay the same size regardless of image dimensions. */
-  object-fit: contain;
+  /* The box takes the photos' own shape, so the image fills it corner to
+     corner. Every card is still identical in size, because the width is
+     set by the grid and the height follows from the ratio. */
+  aspect-ratio: var(--img-ratio);
+  object-fit: cover;
   background: #fff;
   display: block;
 }
@@ -203,8 +209,8 @@ footer {
 
 .product-img {
   width: 100%;
-  height: 200px;
-  object-fit: contain;
+  aspect-ratio: var(--img-ratio);
+  object-fit: cover;
   border-radius: 8px;
   display: block;
   background: #fff;
@@ -344,9 +350,9 @@ footer {
 .thumb {
   width: 38px;
   height: 38px;
-  object-fit: contain;
+  object-fit: cover;
   border-radius: 6px;
-  background: #fff;
+  background: #f2f2f2;
   flex-shrink: 0;
 }
 

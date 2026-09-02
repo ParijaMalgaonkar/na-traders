@@ -209,8 +209,16 @@ function renderCartBadge() {
   badge.style.display = count > 0 ? "inline-flex" : "none";
 }
 
+// A bad link in the sheet (a page URL instead of an image, a photo that was
+// unshared, a typo) would otherwise show a broken-image icon to customers.
+// Fall back to the same grey placeholder used when no image is set.
 function productImage(product, className) {
-  return product.image
-    ? `<img src="${product.image}" alt="${product.name}" class="${className}" />`
-    : `<div class="${className} placeholder"></div>`;
+  if (!product.image) return `<div class="${className} placeholder"></div>`;
+
+  const fallback =
+    `this.onerror=null;` +
+    `this.replaceWith(Object.assign(document.createElement('div'),` +
+    `{className:'${className} placeholder'}))`;
+
+  return `<img src="${product.image}" alt="${product.name}" class="${className}" onerror="${fallback}" />`;
 }
