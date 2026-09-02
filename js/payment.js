@@ -24,8 +24,7 @@ function render() {
 
       <p class="amount">${rupees(total)}</p>
 
-      <img src="${CONFIG.PAYMENT_QR}" alt="Payment QR code" class="qr"
-           onerror="this.replaceWith(Object.assign(document.createElement('p'),{className:'warn',textContent:'Payment QR image not found — add your QR to images/payment-qr.png'}))" />
+      <div id="qr-slot"><p class="muted small">Loading payment QR...</p></div>
 
       <p class="phones">Any questions? ${CONFIG.PHONE_1} / ${CONFIG.PHONE_2}</p>
       <p id="countdown" class="muted small"></p>
@@ -33,6 +32,35 @@ function render() {
   `;
 
   startResetTimer();
+  loadQr();
+}
+
+// The QR lives in the "Payment QR" tab of the prices spreadsheet, so it can
+// be changed without touching the site. Falls back to a local image, and
+// tells the customer to call if neither is available.
+async function loadQr() {
+  const slot = document.getElementById("qr-slot");
+
+  let url = "";
+  try {
+    url = await loadPaymentQrUrl();
+  } catch (err) {
+    console.error(err);
+  }
+  if (!url) url = CONFIG.PAYMENT_QR;
+
+  const img = new Image();
+  img.className = "qr";
+  img.alt = "Payment QR code";
+
+  img.onload = () => slot.replaceChildren(img);
+  img.onerror = () => {
+    slot.innerHTML =
+      `<p class="warn">The payment QR could not be loaded. Please call us at
+       ${CONFIG.PHONE_1} to complete your payment.</p>`;
+  };
+
+  img.src = url;
 }
 
 function startResetTimer() {

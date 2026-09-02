@@ -114,6 +114,23 @@ async function loadProducts() {
   return rowsToProducts(parseCSV(await res.text()));
 }
 
+// Reads the payment QR link out of its own tab in the same spreadsheet.
+// Rather than depending on an exact cell, it scans every cell for the first
+// thing that looks like a link, so the sheet can be laid out with or without
+// a header row and the columns can be in either order.
+async function loadPaymentQrUrl() {
+  const res = await fetch(CONFIG.PAYMENT_QR_CSV_URL, { cache: "no-store" });
+  if (!res.ok) throw new Error("Could not load the payment QR sheet");
+
+  for (const row of parseCSV(await res.text())) {
+    for (const cell of row) {
+      const value = (cell || "").trim();
+      if (/^https?:\/\//i.test(value)) return normalizeImageUrl(value);
+    }
+  }
+  return "";
+}
+
 /* ── formatting ────────────────────────────────────────────────── */
 
 function rupees(amount) {

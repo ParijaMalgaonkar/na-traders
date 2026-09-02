@@ -21,7 +21,15 @@ const CONFIG = {
   // Paste the ".../exec" URL here after deploying apps-script/Code.gs.
   ORDER_ENDPOINT: "https://script.google.com/macros/s/AKfycbyF7QsqR7zwGNR5kKhYgXIKmgpFeEju3qEUnZrjOBMlU88R0ZBCn8z02T8sOqWPTUc2/exec",
 
-  // Static payment QR image. Drop your own QR in images/payment-qr.png
+  // Tab in the same spreadsheet holding the payment QR. It needs one row:
+  // column A a label such as "QR Image", column B the Drive link to the QR.
+  PAYMENT_QR_SHEET: "Payment QR",
+
+  get PAYMENT_QR_CSV_URL() {
+    return `https://docs.google.com/spreadsheets/d/${this.SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(this.PAYMENT_QR_SHEET)}`;
+  },
+
+  // Used only if that tab has no usable link — drop a QR here as a backup
   PAYMENT_QR: "images/payment-qr.png",
 
   // Weight choices shown as tags on the product page.
