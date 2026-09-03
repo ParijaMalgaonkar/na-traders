@@ -16,10 +16,12 @@
 const SPREADSHEET_ID = "1TIAZDwAZB51zO-Alaq6D_zQXeImkC_BIsYgU_uRTliM";
 
 const SHEET_NAME = "Orders";
+// The order of these must match the columns in the Orders tab exactly.
 const HEADERS = [
   "Order Number",
   "Customer Name",
   "Customer Phone",
+  "Customer Email",
   "Customer Address",
   "Order",
   "Total",
@@ -37,7 +39,7 @@ function doPost(e) {
 
     const data = JSON.parse(e.postData.contents);
 
-    const required = ["name", "phone", "address", "order"];
+    const required = ["name", "phone", "email", "address", "order"];
     for (const field of required) {
       if (!data[field] || String(data[field]).trim() === "") {
         return json({ ok: false, error: "Missing field: " + field });
@@ -53,6 +55,7 @@ function doPost(e) {
       // Leading apostrophe keeps +91 / leading zeros intact instead of
       // Sheets mangling the number
       "'" + String(data.phone),
+      data.email,
       data.address,
       data.order,
       Number(data.total) || 0,

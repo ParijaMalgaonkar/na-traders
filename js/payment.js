@@ -18,7 +18,7 @@ function render() {
   main.innerHTML = `
     <div class="payment-box">
       <h2 class="thanks">Thank you for ordering!</h2>
-      <p class="cod-note">${CONFIG.COD_NOTE}</p>
+      <p class="delivery-note">${CONFIG.DELIVERY_NOTE}</p>
       <p class="thanks-sub">Please make payment to this QR code and inform us after doing so. Thank you!</p>
 
       ${orderNumber ? `<p class="order-no">Order ${orderNumber}</p>` : ""}

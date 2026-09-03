@@ -58,7 +58,7 @@ const CONFIG = {
   PAYMENT_RESET_MS: 3 * 60 * 1000,
 
   // Shown above the payment instructions
-  COD_NOTE: "Cash on Delivery available ONLY in Mumbai",
+  DELIVERY_NOTE: "Delivery charges applicable upon delivery by delivery partner",
 
   // Shown in the footer
   PHONE_1: "+91 7021553995",

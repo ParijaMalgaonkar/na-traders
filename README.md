@@ -63,8 +63,10 @@ ProductID | Category | Name | Unit | Price | Available | Image URL
 The script creates the `Orders` tab itself on the first order, with columns:
 
 ```
-Order Number | Customer Name | Customer Phone | Customer Address | Order | Total | Status | Payment Proof
+Order Number | Customer Name | Customer Phone | Customer Email | Customer Address | Order | Total | Status | Payment Proof
 ```
+
+These must stay in this order — the script appends values positionally.
 
 `Status` starts at `Placed` and has a dropdown for `Paid`, `Confirmed`,
 `Delivered`. `Payment Proof` is left blank for you to fill in by hand.

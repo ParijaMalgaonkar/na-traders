@@ -38,6 +38,9 @@ function render() {
       <label for="phone">Phone Number</label>
       <input id="phone" type="tel" inputmode="tel" autocomplete="tel" required />
 
+      <label for="email">Email ID</label>
+      <input id="email" type="email" inputmode="email" autocomplete="email" required />
+
       <label for="address">Address</label>
       <textarea id="address" rows="3" autocomplete="street-address" required></textarea>
 
@@ -50,9 +53,9 @@ function render() {
   const form = document.getElementById("checkout-form");
   const placeBtn = document.getElementById("place-btn");
   const errorEl = document.getElementById("form-error");
-  const fields = ["name", "phone", "address"].map((id) => document.getElementById(id));
+  const fields = ["name", "phone", "email", "address"].map((id) => document.getElementById(id));
 
-  // Button stays disabled until all three details are filled in
+  // Button stays disabled until every detail is filled in
   function validate() {
     placeBtn.disabled = !fields.every((f) => f.value.trim() !== "");
   }
@@ -62,6 +65,17 @@ function render() {
     e.preventDefault();
     if (placeBtn.disabled) return;
 
+    const email = document.getElementById("email").value.trim();
+
+    // Catch an unusable address here rather than recording an order that
+    // cannot be replied to
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      errorEl.textContent = "Please enter a valid email address.";
+      errorEl.classList.remove("hidden");
+      document.getElementById("email").focus();
+      return;
+    }
+
     placeBtn.disabled = true;
     placeBtn.textContent = "Placing order...";
     errorEl.classList.add("hidden");
@@ -69,6 +83,7 @@ function render() {
     const payload = {
       name: document.getElementById("name").value.trim(),
       phone: document.getElementById("phone").value.trim(),
+      email: email,
       address: document.getElementById("address").value.trim(),
       order: cartOrderString(),
       total: Math.round(total * 100) / 100,
