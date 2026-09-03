@@ -56,7 +56,8 @@ function rowsToProducts(rows) {
 
   // Tolerant header matching: ignores case, spaces and punctuation, so
   // "Product ID", "ProductID" and "product_id" all resolve to the same column.
-  const normalize = (s) => (s || "").toLowerCase().replace(/[^a-z]/g, "");
+  // Digits are kept, so headers like "50-200g Required" stay distinct.
+  const normalize = (s) => (s || "").toLowerCase().replace(/[^a-z0-9]/g, "");
   const normalized = header.map(normalize);
   const idx = (...aliases) => {
     for (const a of aliases) {
@@ -74,6 +75,7 @@ function rowsToProducts(rows) {
     price: idx("Price"),
     available: idx("Available"),
     image: idx("Image URL"),
+    smallWeights: idx("50-200g Required"),
   };
 
   // If the sheet's headers cannot be recognised, fail loudly. Carrying on
@@ -97,6 +99,7 @@ function rowsToProducts(rows) {
       price: parseFloat(cell(r, col.price).replace(/,/g, "") || "0"),
       available: cell(r, col.available).trim().toLowerCase() === "yes",
       image: normalizeImageUrl(cell(r, col.image).trim()),
+      smallWeights: cell(r, col.smallWeights).trim().toLowerCase() === "yes",
     }))
     // A product with no price would show as ₹0 and be orderable for free,
     // so an unpriced row is hidden until a price is filled in.
@@ -158,6 +161,17 @@ function unitLabel(product) {
 // Price of one packet of the given weight, in that product's own unit
 function packetPrice(product, weight) {
   return product.unit === "G" ? product.price * weight.g : product.price * weight.kg;
+}
+
+// Which weight tags a product offers. Kesar is checked first, so saffron
+// always gets the gram-scale set regardless of the sheet's other columns.
+function weightsFor(product) {
+  const isKesar =
+    product.category.trim().toLowerCase() === CONFIG.KESAR_CATEGORY.toLowerCase();
+
+  if (isKesar) return CONFIG.WEIGHT_SETS.kesar;
+  if (product.smallWeights) return CONFIG.WEIGHT_SETS.small;
+  return CONFIG.WEIGHT_SETS.standard;
 }
 
 /* ── cart ──────────────────────────────────────────────────────── */

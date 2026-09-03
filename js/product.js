@@ -5,7 +5,9 @@ let selectedWeight = null;
 function renderProduct(product) {
   const main = document.getElementById("product-main");
 
-  const weightTags = CONFIG.WEIGHTS.map(
+  const weights = weightsFor(product);
+
+  const weightTags = weights.map(
     (w) => `<button type="button" class="tag" data-label="${w.label}">${w.label}</button>`
   ).join("");
 
@@ -53,7 +55,7 @@ function renderProduct(product) {
     document.querySelectorAll("#weight-tags .tag").forEach((t) => t.classList.remove("selected"));
     btn.classList.add("selected");
 
-    selectedWeight = CONFIG.WEIGHTS.find((w) => w.label === btn.dataset.label);
+    selectedWeight = weights.find((w) => w.label === btn.dataset.label);
 
     // Packets and the add button only become available once a weight is chosen
     packetBlock.classList.remove("hidden");

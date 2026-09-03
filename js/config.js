@@ -40,15 +40,40 @@ const CONFIG = {
   // multiplied by the sheet's Price depends on that product's Unit column:
   //   Unit = Kg  ->  price x kg
   //   Unit = G   ->  price x g
-  WEIGHTS: [
-    { label: "250g", kg: 0.25, g: 250 },
-    { label: "500g", kg: 0.5, g: 500 },
-    { label: "750g", kg: 0.75, g: 750 },
-    { label: "1kg", kg: 1, g: 1000 },
-    { label: "1.5kg", kg: 1.5, g: 1500 },
-    { label: "2kg", kg: 2, g: 2000 },
-    { label: "3kg", kg: 3, g: 3000 },
-  ],
+  //
+  // Which set a product gets is decided in weightsFor() in store.js:
+  //   Category "Kesar"                -> kesar
+  //   "50-200g Required" column = Yes -> small
+  //   otherwise                       -> standard
+  WEIGHT_SETS: {
+    standard: [
+      { label: "250g", kg: 0.25, g: 250 },
+      { label: "500g", kg: 0.5, g: 500 },
+      { label: "750g", kg: 0.75, g: 750 },
+      { label: "1kg", kg: 1, g: 1000 },
+    ],
+
+    // Smaller pack sizes, and no 250g
+    small: [
+      { label: "50g", kg: 0.05, g: 50 },
+      { label: "100g", kg: 0.1, g: 100 },
+      { label: "200g", kg: 0.2, g: 200 },
+      { label: "500g", kg: 0.5, g: 500 },
+      { label: "750g", kg: 0.75, g: 750 },
+      { label: "1kg", kg: 1, g: 1000 },
+    ],
+
+    // Saffron is sold by the gram, so it gets its own set and nothing else
+    kesar: [
+      { label: "1g", kg: 0.001, g: 1 },
+      { label: "3g", kg: 0.003, g: 3 },
+      { label: "5g", kg: 0.005, g: 5 },
+      { label: "10g", kg: 0.01, g: 10 },
+    ],
+  },
+
+  // Category name that gets the gram-scale weights above
+  KESAR_CATEGORY: "Kesar",
 
   // Packet-count choices in the quantity dropdown
   MAX_PACKETS: 20,
