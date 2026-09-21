@@ -92,13 +92,14 @@ function rowsToProducts(rows) {
   return dataRows
     .map((r) => ({
       id: cell(r, col.id).trim(),
-      category: cell(r, col.category).trim() || "Other",
-      name: cell(r, col.name).trim(),
+      category: canonicalCategory(cell(r, col.category).trim() || "Other"),
+      // Collapse stray spaces/newlines that appear inside some sheet names
+      name: cell(r, col.name).trim().replace(/\s+/g, " "),
       // "G" means the Price is per gram, anything else is treated as per kg
       unit: cell(r, col.unit).trim().toUpperCase() === "G" ? "G" : "KG",
       price: parseFloat(cell(r, col.price).replace(/,/g, "") || "0"),
       available: cell(r, col.available).trim().toLowerCase() === "yes",
-      image: normalizeImageUrl(cell(r, col.image).trim()),
+      img: imageSources(cell(r, col.image).trim()),
       smallWeights: cell(r, col.smallWeights).trim().toLowerCase() === "yes",
     }))
     // A product with no price would show as ₹0 and be orderable for free,
@@ -106,21 +107,74 @@ function rowsToProducts(rows) {
     .filter((p) => p.available && p.name && p.price > 0);
 }
 
-// Google Drive "Share > Copy link" gives a viewer-page URL, which a browser
-// cannot use as an <img> source. Rewrite any Drive link into the direct
-// image form so whoever maintains the sheet can just paste what Drive
-// hands them. Anything else (a normal image URL, or a path like
-// "images/almond.jpg") is passed through untouched.
+// Pulls the file ID out of any Google Drive link:
+// /file/d/FILE_ID/..., /d/FILE_ID, and ?id=FILE_ID
+function driveFileId(url) {
+  if (!url || !/drive\.google\.com|docs\.google\.com/.test(url)) return null;
+  const m =
+    url.match(/\/(?:file\/)?d\/([a-zA-Z0-9_-]{20,})/) ||
+    url.match(/[?&]id=([a-zA-Z0-9_-]{20,})/);
+  return m ? m[1] : null;
+}
+
+// Used only for the payment QR (a single small image). Rewrites a Drive
+// "Copy link" URL into a usable <img> source; other URLs pass through.
 function normalizeImageUrl(url) {
   if (!url) return "";
-  if (!/drive\.google\.com|docs\.google\.com/.test(url)) return url;
+  const id = driveFileId(url);
+  return id ? `https://drive.google.com/thumbnail?id=${id}&sz=w1000` : url;
+}
 
-  // Matches /file/d/FILE_ID/..., /d/FILE_ID, and ?id=FILE_ID
-  const match = url.match(/\/(?:file\/)?d\/([a-zA-Z0-9_-]{20,})/) ||
-                url.match(/[?&]id=([a-zA-Z0-9_-]{20,})/);
-  if (!match) return url;
+// Turns a sheet "Image URL" cell into the set of sources the site actually
+// serves, at the right sizes. Three tiers, fastest first:
+//   1. A locally-optimised WebP built by tools/build-images.mjs (tiny, on our
+//      own free CDN) — used whenever the manifest knows this Drive file.
+//   2. A Drive link we haven't optimised yet — right-sized Drive thumbnails
+//      (w400 / w800) instead of the old 1.4 MB w1000-everywhere. Nothing
+//      breaks when your friend adds a product; re-run the build to optimise it.
+//   3. A plain URL or an in-repo path — used as-is.
+// Returns { small, large, srcset } or null when there's no image.
+function imageSources(rawUrl) {
+  const url = (rawUrl || "").trim();
+  if (!url) return null;
 
-  return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w1000`;
+  const id = driveFileId(url);
+  const manifest = typeof IMAGE_MANIFEST !== "undefined" ? IMAGE_MANIFEST : null;
+
+  if (id && manifest && manifest.ids && manifest.ids[id]) {
+    const small = `${manifest.base}/${id}-400.webp`;
+    const large = `${manifest.base}/${id}-800.webp`;
+    return { small, large, srcset: `${small} 400w, ${large} 800w` };
+  }
+
+  if (id) {
+    const small = `https://drive.google.com/thumbnail?id=${id}&sz=w400`;
+    const large = `https://drive.google.com/thumbnail?id=${id}&sz=w800`;
+    return { small, large, srcset: `${small} 400w, ${large} 800w` };
+  }
+
+  return { small: url, large: url, srcset: "" };
+}
+
+// Sheet categories carry stray spaces and the British "Flavoured" spelling;
+// fold them to one canonical form so grouping, the nav and CONFIG.SECTIONS
+// all line up.
+function canonicalCategory(cat) {
+  return (cat || "").replace(/\s+/g, " ").trim().replace(/flavoured/gi, "Flavored");
+}
+
+// URL/DOM-safe id fragment, e.g. "Flavored Cashew Nuts (Kaju)" -> "flavored-cashew-nuts-kaju"
+function slug(s) {
+  return String(s).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+}
+
+// Escapes a string for safe use inside a double-quoted HTML attribute.
+function escapeAttr(s) {
+  return String(s)
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
 }
 
 async function loadProducts() {
@@ -212,7 +266,7 @@ function addToCart(product, weight, packets) {
       key,
       id: product.id,
       name: product.name,
-      image: product.image,
+      img: product.img,
       weightLabel: weight.label,
       weightKg: weight.kg,
       packets,
@@ -289,17 +343,35 @@ function renderCartBadge() {
   badge.style.display = count > 0 ? "inline-flex" : "none";
 }
 
-// A bad link in the sheet (a page URL instead of an image, a photo that was
-// unshared, a typo) would otherwise show a broken-image icon to customers.
-// Fall back to the same grey placeholder used when no image is set.
-// The image sits inside a frame that does the sizing and clipping, which
-// lets the CSS crop the faint near-white rim the product photos carry at
-// their outer edge, so the photo meets the card edges seamlessly.
-// A bad link in the sheet (a page URL instead of an image, a photo that was
-// unshared, a typo) turns the frame into the same grey placeholder used
-// when no image is set, rather than showing a broken-image icon.
+// Accepts a product (with an `img` object) or an older cart item (which stored
+// a plain `image` URL string), so both keep working after the image change.
+function imgFor(p) {
+  if (p && p.img && p.img.small) return p.img;
+  if (p && p.image) return { small: p.image, large: p.image, srcset: "" };
+  return null;
+}
+
+// Builds a product image inside a sizing/clipping frame. The frame keeps every
+// card identical and crops the faint near-white rim the photos carry, so the
+// picture meets the edges seamlessly. A missing or broken image turns the frame
+// into a grey placeholder rather than showing a broken-image icon.
+//
+// Every image is lazy-loaded and served with a srcset so phones fetch the small
+// (400px) file and only the product page pulls the larger (800px) one — and the
+// detail image reuses the card's already-cached file, so it no longer reloads.
 function productImage(product, className) {
-  if (!product.image) return `<div class="${className} placeholder"></div>`;
+  const img = imgFor(product);
+  if (!img) return `<div class="${className} placeholder"></div>`;
+
+  // sizes tells the browser how wide the image renders, so it can pick the
+  // lightest file from the srcset for each layout.
+  const sizes =
+    className === "product-img" ? "(max-width: 560px) 92vw, 520px" :
+    className === "card-img" ? "(max-width: 600px) 45vw, 240px" :
+    "56px"; // cart thumbnail
+
+  const src = className === "product-img" ? img.large : img.small;
+  const srcsetAttr = img.srcset ? ` srcset="${img.srcset}" sizes="${sizes}"` : "";
 
   const fallback =
     `this.onerror=null;` +
@@ -308,7 +380,8 @@ function productImage(product, className) {
 
   return (
     `<div class="${className}">` +
-    `<img src="${product.image}" alt="${product.name}" onerror="${fallback}" />` +
+    `<img src="${src}"${srcsetAttr} alt="${escapeAttr(product.name || "")}" ` +
+    `loading="lazy" decoding="async" onerror="${fallback}" />` +
     `</div>`
   );
 }

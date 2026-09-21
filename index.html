@@ -8,16 +8,52 @@
 </head>
 <body>
 
+<!-- Off-canvas section navigation (filled in by js/index.js) -->
+<div id="nav-overlay" class="nav-overlay" hidden></div>
+<nav id="section-nav" class="drawer" aria-label="Product sections" aria-hidden="true">
+  <div class="drawer-head">
+    <span class="drawer-title">Sections</span>
+    <button id="nav-close" class="nav-close" aria-label="Close menu">✕</button>
+  </div>
+  <ul id="nav-list" class="nav-list"></ul>
+</nav>
+
+<!-- Contact strip -->
+<div class="contact-bar">
+  <span>For orders &amp; queries:</span>
+  <a href="tel:+917021553995">+91&nbsp;7021553995</a>
+  <span class="sep">/</span>
+  <a href="tel:+919819007222">+91&nbsp;9819007222</a>
+</div>
+
+<!-- Sticky top bar: menu, search, cart -->
+<div class="topbar">
+  <button id="nav-toggle" class="nav-toggle" aria-label="Open sections menu"
+          aria-controls="section-nav" aria-expanded="false">
+    <span class="burger"></span>
+  </button>
+
+  <div class="search" role="search">
+    <input id="search-input" class="search-input" type="search"
+           placeholder="Search products…" autocomplete="off"
+           aria-label="Search products" aria-expanded="false"
+           aria-controls="search-suggestions" role="combobox" />
+    <ul id="search-suggestions" class="suggestions" role="listbox" hidden></ul>
+  </div>
+
+  <a href="cart.html" class="cart-btn-top" aria-label="View cart">
+    🛒<span id="cart-count" class="badge">0</span>
+  </a>
+</div>
+
 <header>
   <a href="index.html" class="logo-link" aria-label="NA Traders home">
     <img src="images/logo.png" alt="NA Traders" class="logo"
+         width="62" height="62"
          onerror="this.closest('.logo-link').style.display='none'" />
   </a>
-  <a href="cart.html" class="cart-btn" aria-label="View cart">
-    🛒<span id="cart-count" class="badge">0</span>
-  </a>
   <h1>NA TRADERS</h1>
-  <p>Premium, Handpicked Dry Fruits & Seeds.</p>
+  <p>Premium, Handpicked Dry Fruits &amp; Seeds.</p>
 </header>
 
 <main>
@@ -27,11 +63,8 @@
   <p id="updated-at" class="muted small"></p>
 </main>
 
-<footer>
-  For orders &amp; enquiries: +91 7021553995 / +91 9819007222
-</footer>
-
 <script src="js/config.js"></script>
+<script src="js/image-manifest.js"></script>
 <script src="js/store.js"></script>
 <script src="js/index.js"></script>
 </body>

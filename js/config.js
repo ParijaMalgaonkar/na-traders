@@ -75,6 +75,31 @@ const CONFIG = {
   // Category name that gets the gram-scale weights above
   KESAR_CATEGORY: "Kesar",
 
+  // Canonical section list and order for the catalogue + side nav.
+  // Sheet categories are matched to these case-insensitively after
+  // normalising whitespace and the "Flavoured" -> "Flavored" spelling, so
+  // these stay the single source of truth for ordering and display names.
+  // A section listed here always appears (with a "coming soon" note when it
+  // has no priced products yet); any category found in the sheet that ISN'T
+  // listed here is appended after these, so nothing is ever silently hidden.
+  SECTIONS: [
+    "Walnuts",
+    "Almonds (Badam)",
+    "Flavored Almonds (Badam)",
+    "Dates",
+    "Pistachio",
+    "Cashew Nuts (Kaju)",
+    "Flavored Cashew Nuts (Kaju)",
+    "Raisins (Kishmish)",
+    "Flavored Raisins (Kishmish)",
+    "Dry Fruits",
+    "Dried Fruits & Berries",
+    "Nuts",
+    "Seeds",
+    "Kesar",
+    "Makhana",
+  ],
+
   // Packet-count choices in the quantity dropdown
   MAX_PACKETS: 20,
 

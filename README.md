@@ -20,11 +20,45 @@ Apps Script attached to your spreadsheet.
 
 | File | What it does |
 |---|---|
-| `js/config.js` | **The only file to edit when changing accounts.** Sheet ID, order endpoint, weights, QR path |
-| `js/store.js` | Loads prices from the sheet, price maths, cart storage |
-| `js/index.js` · `product.js` · `cart.js` · `checkout.js` · `payment.js` | One per page |
+| `js/config.js` | **The only file to edit when changing accounts.** Sheet ID, order endpoint, weights, QR path, and the `SECTIONS` list (order + display names of the catalogue sections / side-nav) |
+| `js/store.js` | Loads prices from the sheet, price maths, cart storage, image sources |
+| `js/index.js` · `product.js` · `cart.js` · `checkout.js` · `payment.js` | One per page (`index.js` also builds the section nav + search) |
 | `apps-script/Code.gs` | Paste into the spreadsheet's Apps Script to receive orders |
 | `css/style.css` | All styling |
+| `tools/build-images.mjs` | One-time image optimiser — downloads Drive photos and makes fast WebP copies (see **Product images** below) |
+| `js/image-manifest.js` | **Auto-generated** — lists which images have optimised local copies. Don't edit by hand |
+
+## Product images (fast loading)
+
+Product photos are the single biggest thing affecting load time. Instead of
+pulling full-size (~1.4 MB) photos straight from Google Drive on every visit —
+slow, and Drive rate-limits under traffic — the site serves small **WebP**
+copies (about 12–130 KB each) from this repo, lazy-loaded as the shopper
+scrolls. This needs no paid service; everything below is free.
+
+**How it works.** `tools/build-images.mjs` reads the Prices sheet, downloads
+each Drive image once, and writes two WebP sizes into `images/products/`
+(`<id>-400.webp` for cards, `<id>-800.webp` for the product page). It also
+writes `js/image-manifest.js`. At runtime the site uses the local WebP when the
+manifest has it, and otherwise falls back to the Drive link — so a brand-new
+product still shows immediately; it just isn't optimised until you re-run the
+build.
+
+**When to run it.** After your friend adds new products or changes photos in the
+sheet:
+
+```bash
+npm install        # first time only (pulls in the free "sharp" library)
+npm run build-images
+```
+
+Re-runs are cheap — images already built are skipped. Then reload the site.
+(`node_modules/` is git-ignored; the WebP files in `images/products/` and
+`js/image-manifest.js` are committed and served.)
+
+> A handful of images can occasionally fail with "fetch failed" if Drive
+> throttles the download. They just fall back to Drive in the meantime — simply
+> run `npm run build-images` again to pick them up.
 
 ## Setup
 
@@ -81,8 +115,10 @@ shows a "QR image not found" notice instead.
 
 ## Running locally
 
+From the project folder:
+
 ```bash
-python3 -m http.server 5500 --directory /Users/parijamalgaonkar/Desktop/NA-Traders-Website
+python3 -m http.server 5500
 ```
 
 Then open http://localhost:5500
