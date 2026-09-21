@@ -1,2 +1,6 @@
 .DS_Store
 .claude/
+
+# Build tooling (the deployed site is static; Node is only used to build images)
+node_modules/
+tools/.cache/

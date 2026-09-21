@@ -1,0 +1,12 @@
+{
+  "name": "na-traders",
+  "version": "1.0.0",
+  "private": true,
+  "description": "NA Traders order website — static site. Node is only used for the one-time image build (tools/build-images.mjs); the deployed site is plain HTML/CSS/JS.",
+  "scripts": {
+    "build-images": "node tools/build-images.mjs"
+  },
+  "devDependencies": {
+    "sharp": "^0.33.5"
+  }
+}
