@@ -58,6 +58,7 @@ function render() {
     </div>
 
     <button id="buy-btn" class="primary-btn big-btn">Buy</button>
+    <p class="delivery-disclaimer">Delivery charges will be applicable at the time of delivery.</p>
   `;
 
   main.querySelectorAll(".remove-btn").forEach((btn) => {

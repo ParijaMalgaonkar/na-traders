@@ -54,6 +54,20 @@ header p {
   margin: 0.5rem 0 0;
 }
 
+/* "By N.A. Traders" line under the NIBBLES wordmark */
+.byline {
+  margin: 0.15rem 0 0;
+  color: var(--cream);
+  font-size: 0.85rem;
+  letter-spacing: 0.18em;
+  opacity: 0.8;
+}
+header.compact .byline {
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  margin-top: 0.05rem;
+}
+
 .cart-btn,
 .back-btn {
   position: absolute;
@@ -353,6 +367,18 @@ footer {
   background: #ddd;
   color: #999;
   cursor: not-allowed;
+}
+
+/* Confirmation state after Add to Cart — wins over :disabled */
+.primary-btn.added,
+.primary-btn.added:disabled {
+  background: #1e8a4c;
+  color: #fff;
+  cursor: default;
+}
+.primary-btn .tick {
+  font-weight: bold;
+  margin-right: 0.35rem;
 }
 
 .primary-btn.inline {
@@ -792,6 +818,26 @@ footer {
   border-bottom: 1px solid rgba(20, 61, 43, 0.08);
 }
 
+/* light disclaimer under the last section in the nav */
+.nav-disclaimer {
+  margin: 0.5rem 0.9rem 1.2rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid rgba(20, 61, 43, 0.12);
+  color: rgba(20, 61, 43, 0.6);
+  font-size: 0.78rem;
+  font-style: italic;
+  line-height: 1.45;
+}
+
+/* delivery-charges disclaimer under the cart's Buy button */
+.delivery-disclaimer {
+  margin: 1rem 0 0;
+  text-align: center;
+  color: #8a7f6d;
+  font-size: 0.85rem;
+  font-style: italic;
+}
+
 .nav-overlay {
   position: fixed;
   inset: 0;
@@ -821,6 +867,29 @@ body.no-scroll { overflow: hidden; }
   0%, 100% { box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); }
   15%, 60% { box-shadow: 0 0 0 3px var(--gold), 0 6px 18px rgba(0, 0, 0, 0.18); }
 }
+
+/* ── scroll-to-top button ───────────────────────────────────────── */
+
+.to-top {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 80;
+  width: 46px;
+  height: 46px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--green);
+  color: var(--cream);
+  border: none;
+  border-radius: 50%;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.28);
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+.to-top:hover { background: #1d5238; transform: translateY(-2px); }
+.to-top[hidden] { display: none; }
 
 @media (max-width: 480px) {
   .topbar { padding: 0.5rem 0.6rem; gap: 0.45rem; }

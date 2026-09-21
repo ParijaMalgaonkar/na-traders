@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>NA Traders</title>
+<title>Nibbles</title>
 <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
@@ -16,6 +16,7 @@
     <button id="nav-close" class="nav-close" aria-label="Close menu">✕</button>
   </div>
   <ul id="nav-list" class="nav-list"></ul>
+  <p class="nav-disclaimer">Currently delivering only in Mumbai region</p>
 </nav>
 
 <!-- Contact strip -->
@@ -47,13 +48,14 @@
 </div>
 
 <header>
-  <a href="index.html" class="logo-link" aria-label="NA Traders home">
-    <img src="images/logo.png" alt="NA Traders" class="logo"
+  <a href="index.html" class="logo-link" aria-label="Nibbles home">
+    <img src="images/logo.png" alt="Nibbles by N.A. Traders" class="logo"
          width="62" height="62"
          onerror="this.closest('.logo-link').style.display='none'" />
   </a>
-  <h1>NA TRADERS</h1>
-  <p>Premium, Handpicked Dry Fruits &amp; Seeds.</p>
+  <h1>NIBBLES</h1>
+  <p class="byline">By N.A. TRADERS</p>
+  <p>Premium Quality, Globally Sourced &amp; Imported.</p>
 </header>
 
 <main>
@@ -62,6 +64,12 @@
   </div>
   <p id="updated-at" class="muted small"></p>
 </main>
+
+<button id="to-top" class="to-top" aria-label="Scroll to top" title="Scroll to top" hidden>
+  <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
+    <path d="M12 5l-7 7h4v7h6v-7h4z" fill="currentColor" />
+  </svg>
+</button>
 
 <script src="js/config.js"></script>
 <script src="js/image-manifest.js"></script>

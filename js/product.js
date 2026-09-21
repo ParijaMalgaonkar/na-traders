@@ -66,9 +66,19 @@ function renderProduct(product) {
   packetSelect.addEventListener("change", updatePreview);
 
   addBtn.addEventListener("click", () => {
-    if (!selectedWeight) return;
+    if (!selectedWeight || addBtn.disabled) return;
     addToCart(product, selectedWeight, parseInt(packetSelect.value, 10));
-    window.location.href = "index.html";
+    renderCartBadge();
+
+    // Confirm inline with a green tick, hold for 2s, then return the shopper to
+    // this product's section on the catalogue (not the top of the page).
+    addBtn.classList.add("added");
+    addBtn.innerHTML = '<span class="tick">✓</span> Added to cart';
+    addBtn.disabled = true;
+
+    setTimeout(() => {
+      window.location.href = "index.html#sec-" + slug(product.category);
+    }, 2000);
   });
 }
 

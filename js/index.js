@@ -8,17 +8,6 @@ function groupByCategory(products) {
   }, {});
 }
 
-// Section order = the canonical list in config (always shown, even when a
-// section has no priced products yet), followed by any extra categories that
-// turn up in the sheet but aren't listed there — so nothing is ever hidden.
-function orderedSections(groups) {
-  const canonical = CONFIG.SECTIONS.map(canonicalCategory);
-  const extras = Object.keys(groups)
-    .filter((c) => !canonical.includes(c))
-    .sort();
-  return [...canonical, ...extras];
-}
-
 function render(products) {
   const container = document.getElementById("catalog");
   container.innerHTML = "";
@@ -31,14 +20,17 @@ function render(products) {
     return;
   }
 
+  // Sections come straight from the sheet: every category that has priced
+  // products, in the order it first appears in the sheet. No names, order or
+  // spellings are hard-coded — the sheet is the single source of truth.
   const groups = groupByCategory(products);
-  const sections = orderedSections(groups);
+  const sections = Object.keys(groups);
   const searchIndex = [];
   const navItems = [];
   let idx = 0;
 
   sections.forEach((cat) => {
-    const items = groups[cat] || [];
+    const items = groups[cat];
     const secId = `sec-${slug(cat)}`;
 
     const section = document.createElement("section");
@@ -49,38 +41,35 @@ function render(products) {
     heading.textContent = cat;
     section.appendChild(heading);
 
-    if (items.length === 0) {
-      // Kept in the menu on purpose — prices/photos are on their way.
-      const note = document.createElement("p");
-      note.className = "coming-soon";
-      note.textContent = "Coming soon.";
-      section.appendChild(note);
-    } else {
-      const grid = document.createElement("div");
-      grid.className = "grid";
+    const grid = document.createElement("div");
+    grid.className = "grid";
 
-      items.forEach((p) => {
-        const cardId = `prod-${idx++}`;
-        const card = document.createElement("a");
-        card.className = "card";
-        card.id = cardId;
-        card.href = `product.html?id=${encodeURIComponent(p.id)}`;
-        card.innerHTML = `
-          ${productImage(p, "card-img")}
-          <div class="card-body">
-            <h3>${escapeAttr(p.name)}</h3>
-            <p class="price">${rupees(p.price)} / ${unitLabel(p)}</p>
-          </div>
-        `;
-        grid.appendChild(card);
-        searchIndex.push({ name: p.name, cat, id: cardId });
+    items.forEach((p) => {
+      const cardId = `prod-${idx++}`;
+      const card = document.createElement("a");
+      card.className = "card";
+      card.id = cardId;
+      card.href = `product.html?id=${encodeURIComponent(p.id)}`;
+      // Card shows the short name; search still matches the full sheet name.
+      card.innerHTML = `
+        ${productImage(p, "card-img")}
+        <div class="card-body">
+          <h3>${escapeAttr(cardName(p))}</h3>
+          <p class="price">${rupees(p.price)} / ${unitLabel(p)}</p>
+        </div>
+      `;
+      grid.appendChild(card);
+      searchIndex.push({
+        name: p.name,
+        cat,
+        id: cardId,
+        search: (p.name + " " + (p.websiteName || "")).toLowerCase(),
       });
+    });
 
-      section.appendChild(grid);
-    }
-
+    section.appendChild(grid);
     container.appendChild(section);
-    navItems.push({ label: cat, id: secId, count: items.length });
+    navItems.push({ label: cat, id: secId });
   });
 
   document.getElementById("updated-at").textContent =
@@ -227,7 +216,7 @@ function setupSearch(index) {
   input.addEventListener("input", () => {
     const q = input.value.trim().toLowerCase();
     if (!q) return hide();
-    show(index.filter((m) => m.name.toLowerCase().includes(q)).slice(0, 8));
+    show(index.filter((m) => m.search.includes(q)).slice(0, 8));
   });
 
   input.addEventListener("keydown", (e) => {
@@ -274,16 +263,39 @@ function highlightMatch(name, query) {
   );
 }
 
+/* ── scroll-to-top button ───────────────────────────────────────── */
+
+function setupScrollTop() {
+  const btn = document.getElementById("to-top");
+  if (!btn) return;
+  const toggle = () => { btn.hidden = window.scrollY < 400; };
+  window.addEventListener("scroll", toggle, { passive: true });
+  toggle();
+  btn.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
+}
+
+// After "Add to cart" the shopper is sent to index.html#sec-<id>; drop them at
+// that section once the catalogue has rendered (the section didn't exist yet
+// when the browser first tried to honour the hash).
+function scrollToHashSection() {
+  const h = location.hash;
+  if (!h || !h.startsWith("#sec-")) return;
+  const el = document.getElementById(h.slice(1));
+  if (el) requestAnimationFrame(() => el.scrollIntoView({ block: "start" }));
+}
+
 /* ── boot ───────────────────────────────────────────────────────── */
 
 async function init() {
   if (enforcePaymentHold()) return;
 
   setupNav();
+  setupScrollTop();
   renderCartBadge();
 
   try {
     render(await loadProducts());
+    scrollToHashSection();
   } catch (err) {
     console.error(err);
     document.getElementById("catalog").innerHTML =

@@ -76,6 +76,10 @@ function rowsToProducts(rows) {
     available: idx("Available"),
     image: idx("Image URL"),
     smallWeights: idx("50-200g Required"),
+    // Optional: the exact name to show on the catalogue cards. Lets the shop
+    // owner control card names from the sheet. Blank falls back to the
+    // auto-shortened name.
+    websiteName: idx("Website Name", "WebsiteName", "Website"),
   };
 
   // If the sheet's headers cannot be recognised, fail loudly. Carrying on
@@ -101,6 +105,7 @@ function rowsToProducts(rows) {
       available: cell(r, col.available).trim().toLowerCase() === "yes",
       img: imageSources(cell(r, col.image).trim()),
       smallWeights: cell(r, col.smallWeights).trim().toLowerCase() === "yes",
+      websiteName: cell(r, col.websiteName).trim(),
     }))
     // A product with no price would show as ₹0 and be orderable for free,
     // so an unpriced row is hidden until a price is filled in.
@@ -156,16 +161,56 @@ function imageSources(rawUrl) {
   return { small: url, large: url, srcset: "" };
 }
 
-// Sheet categories carry stray spaces and the British "Flavoured" spelling;
-// fold them to one canonical form so grouping, the nav and CONFIG.SECTIONS
-// all line up.
+// Normalise only whitespace, so "Walnuts " and "Walnuts" group together.
+// Spelling and wording are left exactly as typed in the sheet — the sheet is
+// the single source of truth for every name shown on the site.
 function canonicalCategory(cat) {
-  return (cat || "").replace(/\s+/g, " ").trim().replace(/flavoured/gi, "Flavored");
+  return (cat || "").replace(/\s+/g, " ").trim();
 }
 
-// URL/DOM-safe id fragment, e.g. "Flavored Cashew Nuts (Kaju)" -> "flavored-cashew-nuts-kaju"
+// URL/DOM-safe id fragment, e.g. "Cashew Nuts (Kaju)" -> "cashew-nuts-kaju"
 function slug(s) {
   return String(s).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+}
+
+function escapeRegExp(s) {
+  return String(s).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+// Name shown on the catalogue cards. If the sheet's "Website Name" column is
+// filled for this product, that wins — so the shop owner controls card names
+// from the sheet. Otherwise we auto-shorten: since each card already sits under
+// its section heading, we drop the section's own words from the product name so
+// "Almond - Small" reads as just "Small". Nothing is hard-coded — the words to
+// drop are derived from the product's own category, and a name that doesn't
+// repeat the category (e.g. "Mamra Badam") is left untouched. The product page,
+// cart and order always use the full name from the sheet.
+function cardName(product) {
+  if (product.websiteName) return product.websiteName;
+
+  const name = product.name || "";
+  const cat = product.category || "";
+
+  // Words that make up the category (before any parenthetical), plus simple
+  // singular/plural variants, e.g. "Almonds" -> {almonds, almond}.
+  const words = new Set();
+  (cat.split("(")[0].match(/[A-Za-z]+/g) || []).forEach((w) => {
+    const lw = w.toLowerCase();
+    words.add(lw);
+    words.add(lw.endsWith("s") ? lw.slice(0, -1) : lw + "s");
+  });
+
+  let r = name;
+  // Drop a parenthetical that just repeats the category's own, e.g. "(Kaju)".
+  (cat.match(/\(([^)]*)\)/g) || []).forEach((p) => {
+    r = r.replace(new RegExp("\\(\\s*" + escapeRegExp(p.slice(1, -1).trim()) + "\\s*\\)", "ig"), " ");
+  });
+  // Drop the category's words wherever they appear (whole words only).
+  r = r.replace(/[A-Za-z]+/g, (m) => (words.has(m.toLowerCase()) ? "" : m));
+  // Tidy up leftovers: a hyphen glued to a word by a removal, empty (), edges.
+  r = r.replace(/(\S)-\s+/g, "$1 ").replace(/\(\s*\)/g, " ");
+  r = r.replace(/\s+/g, " ").replace(/^[\s\-–—:,]+|[\s\-–—:,]+$/g, "").trim();
+  return r || name;
 }
 
 // Escapes a string for safe use inside a double-quoted HTML attribute.
@@ -266,6 +311,7 @@ function addToCart(product, weight, packets) {
       key,
       id: product.id,
       name: product.name,
+      category: product.category,
       img: product.img,
       weightLabel: weight.label,
       weightKg: weight.kg,
@@ -288,10 +334,15 @@ function cartTotal() {
   return getCart().reduce((sum, item) => sum + item.unitPrice * item.packets, 0);
 }
 
-// "Almond Big (250g) x 2, Flax Seeds (1kg) x 1"
+// Full category + name so each order row is unambiguous for fulfilment, e.g.
+// "Almonds (Badam) - Almond - Medium (250g) x 2, Seeds - Flax Seeds (1kg) x 1"
+// (older carts saved before category was stored fall back to the name alone).
 function cartOrderString() {
   return getCart()
-    .map((item) => `${item.name} (${item.weightLabel}) x ${item.packets}`)
+    .map((item) => {
+      const full = item.category ? `${item.category} - ${item.name}` : item.name;
+      return `${full} (${item.weightLabel}) x ${item.packets}`;
+    })
     .join(", ");
 }
 

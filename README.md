@@ -67,7 +67,7 @@ Re-runs are cheap — images already built are skipped. Then reload the site.
 The `Prices` tab needs these headers (order doesn't matter):
 
 ```
-ProductID | Category | Name | Unit | Price | Available | Image URL
+ProductID | Category | Name | Unit | Price | Available | Image URL | Website Name
 ```
 
 - **`Unit` decides how `Price` is read.** `Kg` means the price is per kilogram
@@ -81,7 +81,17 @@ ProductID | Category | Name | Unit | Price | Available | Image URL
     route for whoever maintains the sheet.
   - a **direct image URL** ending in `.jpg` / `.png` / `.webp`
   - a **path inside this repo**, e.g. `images/almond-big.jpg`
+- **`Website Name`** (optional) is the short name shown on the catalogue cards,
+  so you control card wording from the sheet. Blank falls back to an automatic
+  short name (the product `Name` with the section's own words trimmed, e.g.
+  "Almond - Small" → "Small"). The product page, cart and order always use the
+  full `Name`. To fill this column with the current names as a starting point,
+  run `apps-script/populate-website-names.gs` once (see its header comment).
 - Update prices here daily — the website and cart pick them up automatically.
+
+Sections on the site are derived from the sheet: every category with at least
+one priced product appears, in the order it first shows up in the sheet, spelled
+exactly as typed. Nothing about names/order is hard-coded.
 
 ### 2. Deploy the order endpoint
 
