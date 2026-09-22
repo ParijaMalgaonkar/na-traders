@@ -628,10 +628,13 @@ footer {
   background: var(--gold);
   color: var(--green);
   text-align: center;
-  font-size: 0.85rem;
+  /* Scales down on narrow phones so the whole line fits on one row,
+     capped at 0.85rem where there's room (tablet/desktop). */
+  font-size: clamp(0.6rem, 3vw, 0.85rem);
   font-weight: bold;
-  padding: 0.4rem 0.8rem;
+  padding: 0.4rem 0.6rem;
   line-height: 1.5;
+  white-space: nowrap;
 }
 .contact-bar a {
   color: var(--green);
