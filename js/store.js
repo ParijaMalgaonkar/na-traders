@@ -418,7 +418,10 @@ function productImage(product, className) {
   // lightest file from the srcset for each layout.
   const sizes =
     className === "product-img" ? "(max-width: 560px) 92vw, 520px" :
-    className === "card-img" ? "(max-width: 600px) 45vw, 240px" :
+    // Cards are small (~170px on a 2-col phone). Describe them narrow so even
+    // high-DPI phones pick the light 400px file (~32 KB) instead of the 800px
+    // one (~100 KB) — much faster to load section-by-section, still sharp.
+    className === "card-img" ? "(max-width: 600px) 130px, 240px" :
     "56px"; // cart thumbnail
 
   const src = className === "product-img" ? img.large : img.small;

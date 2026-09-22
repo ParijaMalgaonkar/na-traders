@@ -111,6 +111,20 @@ header.compact .logo {
   height: 46px;
 }
 
+/* Landing hero: a big, centred logo sitting above the wordmark */
+header:not(.compact) {
+  padding: 1.8rem 1.5rem 2rem;
+}
+header:not(.compact) .logo-link {
+  position: static;
+  transform: none;
+  display: inline-block;
+  margin: 0 0 0.7rem;
+}
+header:not(.compact) .logo {
+  height: 110px;
+}
+
 .badge {
   display: none;
   align-items: center;
@@ -604,6 +618,9 @@ footer {
   .logo,
   header.compact .logo {
     height: 42px;
+  }
+  header:not(.compact) .logo {
+    height: 92px;
   }
 }
 
