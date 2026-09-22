@@ -77,6 +77,30 @@ function render(products) {
 
   buildNav(navItems);
   setupSearch(searchIndex);
+  setupPreload();
+}
+
+// The images are already tiny (~32 KB); the lag when scrolling into a later
+// section is network latency, since a lazy image only starts loading when you
+// reach it. So after the page settles, quietly warm the browser cache with
+// every card image, a few at a time and at low priority. The visible <img>s
+// stay lazy — they just paint instantly from cache once you scroll to them.
+function setupPreload() {
+  const urls = Array.from(document.querySelectorAll("#catalog .card-img img"))
+    .map((im) => im.getAttribute("src"))
+    .filter((u) => u && u.indexOf("images/products/") !== -1);
+  if (!urls.length) return;
+
+  // Start shortly after load so it doesn't compete with the first paint, then
+  // request every card image at low priority. They multiplex over one HTTP/2
+  // connection and land in the browser cache; the lazy <img>s paint from cache.
+  setTimeout(() => {
+    urls.forEach((u) => {
+      const im = new Image();
+      try { im.fetchPriority = "low"; } catch (e) {}
+      im.src = u;
+    });
+  }, 600);
 }
 
 /* ── section nav (left drawer + burger) ─────────────────────────── */
